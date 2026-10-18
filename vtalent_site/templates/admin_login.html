@@ -1,0 +1,5 @@
+{% extends "base.html" %}
+{% block title %}Staff Login | VTalent{% endblock %}
+{% block content %}
+<section class="login-wrap"><form method="post" class="surface-card login-card">{% csrf_token %}<p class="eyebrow">STAFF ACCESS</p><h1>Admin Login</h1><p class="muted">Sign in to manage courses, batches, links and announcements.</p>{% if error %}<div class="message error">{{ error }}</div>{% endif %}<label class="field-label" for="username">Username</label><input class="form-control" id="username" name="username" required autocomplete="username"><label class="field-label" for="password">Password</label><input class="form-control" id="password" type="password" name="password" required autocomplete="current-password"><button class="btn btn-full" type="submit">Sign In</button></form></section>
+{% endblock %}

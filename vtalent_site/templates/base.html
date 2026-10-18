@@ -1,0 +1,51 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="VTalent technical training, skill development and placement assistance.">
+  <title>{% block title %}VTalent | Value For Your IT Dream{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <link rel="stylesheet" href="{% static 'css/brand.css' %}">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="{% url 'home' %}" aria-label="VTalent home">
+    <img class="brand-logo" src="{% static 'image/vtalent logo.jpg' %}" alt="">
+    <span><strong>Vtalent</strong><small>VALUE FOR YOUR IT DREAM</small></span>
+  </a>
+  <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false" id="navToggle">☰</button>
+  <nav class="main-nav" id="mainNav">
+    <a href="{% url 'home' %}">Home</a>
+    <a href="{% url 'courses' %}">Courses</a>
+    <a href="{% url 'registration' %}">Registration</a>
+    <a href="{% url 'about' %}">About Us</a>
+    <a href="{% url 'contact' %}">Contact</a>
+    <a href="{% url 'staff_login' %}">Admin</a>
+    <a class="btn btn-small" href="{% url 'registration' %}">Register Now</a>
+  </nav>
+</header>
+{% if announcements %}
+  <div class="announcement-strip" role="status">
+    <span>📢</span>
+    <div class="announcement-track">{% for notice in announcements %}<span>{{ notice.message }}</span>{% endfor %}</div>
+  </div>
+{% endif %}
+{% if messages %}
+  <div class="messages wrap">{% for message in messages %}<div class="message {{ message.tags }}">{{ message }}</div>{% endfor %}</div>
+{% endif %}
+<main>{% block content %}{% endblock %}</main>
+<footer class="site-footer">
+  <div class="footer-grid wrap">
+    <div><a class="brand footer-brand" href="{% url 'home' %}"><img class="brand-logo" src="{% static 'image/vtalent logo.jpg' %}" alt=""><span><strong>Vtalent</strong><small>VALUE FOR YOUR IT DREAM</small></span></a><p>Technical Training · Skill Development · Placement Assistance</p></div>
+    <div><h4>Links</h4><a href="{% url 'home' %}">Home</a><a href="{% url 'about' %}">About</a><a href="{% url 'courses' %}">Courses</a><a href="{% url 'contact' %}">Contact Us</a></div>
+    <div><h4>Courses</h4><a href="{% url 'courses' %}">Java / .Net / Python</a><a href="{% url 'courses' %}">Salesforce</a><a href="{% url 'courses' %}">Data Sciences</a></div>
+    <div><h4>Contact</h4><p>Hyderabad · Visakhapatnam</p><a href="tel:8977149444">8977149444</a><a href="mailto:hr@vtalent.in">hr@vtalent.in</a></div>
+  </div>
+  <div class="footer-bottom">© Vtalent, All Rights Reserved.</div>
+</footer>
+<script src="{% static 'js/site.js' %}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

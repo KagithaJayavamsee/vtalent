@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Registration | VTalent{% endblock %}
+{% block content %}
+<section class="page-hero registration-hero"><div class="wrap"><p class="eyebrow">REGISTRATION</p><h1>Register for a Batch</h1><p>Select your course, review the active batch and you'll be redirected to our Google Form to complete your registration.</p></div></section>
+<section class="section wrap registration-layout">
+  <div class="surface-card">
+    <p class="eyebrow">STEP 1 — CHOOSE YOUR COURSE</p>
+    <label for="courseSelect" class="field-label">Select course</label>
+    <select id="courseSelect" class="form-control">
+      {% for course in courses %}<option value="{{ course.id }}" {% if selected_course_id == course.id|stringformat:"s" %}selected{% endif %}>{{ course.title }}</option>{% endfor %}
+    </select>
+    <p class="help-text">Closed batches are shown as unavailable. You can register only for open batches with a valid form link.</p>
+    <div id="batchList">
+      {% for course in courses %}
+      <div class="registration-course" data-course="{{ course.id }}" {% if selected_course_id and selected_course_id != course.id|stringformat:"s" %}hidden{% elif not selected_course_id and not forloop.first %}hidden{% endif %}>
+        {% for batch in course.batches.all %}
+          {% if batch.is_visible %}<div class="registration-batch"><span>{{ course.title }} · {{ batch.name }} · {{ batch.month_year }}</span>{% if batch.can_register %}<span class="status-open">Open</span><a href="{% url 'register_batch' batch.id %}" class="text-link">Register →</a>{% else %}<span class="status-closed">Closed</span>{% endif %}</div>{% endif %}
+        {% empty %}<p class="muted">No batches listed for this course yet.</p>{% endfor %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  <aside class="surface-card register-aside"><p class="eyebrow">STEP 2 — REGISTER</p><h2>Complete your registration</h2><p>Choose an open batch on the left. The registration button will open the Google Form provided by VTalent.</p><a id="registerFallback" class="btn btn-full" href="{% url 'courses' %}">View available batches ↗</a><p class="help-text">You'll be redirected to the selected Google Form. Fill in your details and our team will reach out.</p></aside>
+</section>
+{% endblock %}
+{% block scripts %}<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const select = document.getElementById("courseSelect");
+  const groups = document.querySelectorAll(".registration-course");
+  if (!select) return;
+  select.addEventListener("change", function () {
+    groups.forEach(group => group.hidden = group.dataset.course !== select.value);
+  });
+});
+</script>{% endblock %}

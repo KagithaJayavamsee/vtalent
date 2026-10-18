@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}About Us | VTalent{% endblock %}
+{% block content %}
+<style>
+  .about-training-image {
+    display: block;
+    width: 100%;
+    max-height: 460px;
+    margin: 0 auto 40px;
+    border-radius: 18px;
+    object-fit: cover;
+  }
+  .about-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 20px;
+    text-align: center;
+  }
+  .about-stats > div {
+    padding: 22px;
+    border-radius: 14px;
+    background: white;
+    box-shadow: 0 8px 30px rgb(20 37 75 / 8%);
+  }
+  .about-stats strong {
+    display: block;
+    color: var(--blue);
+    font-size: 2rem;
+    line-height: 1.2;
+  }
+  .about-services {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+    margin-top: 30px;
+  }
+  .about-services h3 { margin-top: 0; }
+  @media (max-width: 760px) {
+    .about-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .about-services { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 520px) {
+    .about-services { grid-template-columns: 1fr; }
+  }
+</style>
+<section class="page-hero">
+  <div class="wrap">
+    <p class="eyebrow">ABOUT US</p>
+    <h1>Technical Training, Skill Development and Placements</h1>
+  </div>
+</section>
+<section class="section wrap">
+  <img class="about-training-image" src="https://images.pexels.com/photos/5530484/pexels-photo-5530484.jpeg?auto=compress&amp;cs=tinysrgb&amp;dpr=2&amp;h=650&amp;w=940" alt="Students training at Vtalent">
+  <div class="about-layout">
+    <div>
+      <p class="eyebrow">WHO WE ARE</p>
+      <h2>Vtalent — Value For Your IT Dream</h2>
+      <p>Vtalent is a leading Technical Training, Skill Development and Placement company based in Hyderabad, serving PAN India. Our courses are designed and developed by IT veterans with more than a decade of experience in training and placing the right candidates in leading MNCs.</p>
+      <p>We are known for extensive practical training that gives students real exposure to highly demanded technologies in the industry. Our trainers are highly qualified professionals from various MNCs, helping students understand real-time working scenarios and gain corporate exposure.</p>
+    </div>
+  </div>
+</section>
+<section class="section soft-section">
+  <div class="wrap">
+    <div class="about-stats">
+      <div><strong>3000+</strong><span>Students Trained &amp; Placed</span></div>
+      <div><strong>100%</strong><span>Job Placements In Top MNCs</span></div>
+      <div><strong>10+</strong><span>Years — IT Veteran Trainers</span></div>
+      <div><strong>4-6</strong><span>Months Comprehensive Programs</span></div>
+    </div>
+  </div>
+</section>
+<section class="section wrap">
+  <div class="section-heading">
+    <p class="eyebrow">WHAT WE PROVIDE</p>
+    <h2>Our Courses And Services</h2>
+  </div>
+  <div class="about-services">
+    <article class="course-card">
+      <h3>Aptitude &amp; Logical Reasoning</h3>
+      <p>Comprehensive mathematical, quantitative, and logical problem-solving sessions tailored for MNC screening exams.</p>
+    </article>
+    <article class="course-card">
+      <h3>GD / JAM Sessions</h3>
+      <p>Daily Group Discussions and Just-A-Minute speaking exercises to build corporate communication confidence.</p>
+    </article>
+    <article class="course-card">
+      <h3>Core &amp; Emerging Technologies</h3>
+      <p>Intensive hands-on tracks in Java, .Net, Python, Salesforce, and Data Sciences taught by senior MNC veterans.</p>
+    </article>
+    <article class="course-card">
+      <h3>Resume Preparation &amp; Presentation</h3>
+      <p>ATS-friendly resume crafting, project portfolio showcase, and professional presentation skills.</p>
+    </article>
+    <article class="course-card">
+      <h3>Mock Interviews</h3>
+      <p>One-on-one simulated technical and HR interviews with experienced interviewers and actionable feedback.</p>
+    </article>
+    <article class="course-card">
+      <h3>Placements in Top MNCs</h3>
+      <p>Dedicated placement drives and job placement support for every graduating batch.</p>
+    </article>
+  </div>
+</section>
+{% endblock %}

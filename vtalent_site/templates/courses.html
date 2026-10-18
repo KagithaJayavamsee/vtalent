@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Courses | VTalent{% endblock %}
+{% block content %}
+<section class="page-hero"><div class="wrap"><p class="eyebrow">LEARN · BUILD · GROW</p><h1>Our Courses</h1><p>Explore our career-focused technical training programs and available batches.</p></div></section>
+<section class="section wrap">
+  <div class="course-grid">
+  {% for course in courses %}
+    <article class="course-card course-detail">
+      <p class="eyebrow">{{ course.category|default:"TECHNICAL TRAINING" }}</p><h2>{{ course.title }}</h2><div class="tag-row"><span class="tag">{{ course.duration }}</span></div>
+      <p>{{ course.description }}</p>
+      <h4>Syllabus</h4>
+      <ul class="syllabus-list">{% for item in course.syllabus_items %}<li>{{ item }}</li>{% empty %}<li>Practical training and real-time project guidance</li>{% endfor %}</ul>
+      {% if course.syllabus_items|length > 5 %}<details class="syllabus-more"><summary>View full syllabus</summary><p>Full syllabus is listed above.</p></details>{% endif %}
+      <h4>Available batches</h4>
+      {% for batch in course.batches.all %}
+        {% if batch.is_visible %}<div class="available-batch"><div><strong>{{ batch.name }}</strong><small>{{ batch.month_year }} · {{ batch.duration|default:course.duration }}</small></div>{% if batch.can_register %}<span class="status-open">Registrations Open</span><a class="btn btn-mini" href="{% url 'register_batch' batch.id %}">Register</a>{% else %}<span class="status-closed">Registrations Closed</span><button class="btn btn-mini" disabled>Closed</button>{% endif %}</div>{% endif %}
+      {% empty %}<p class="muted">Batch details will be announced soon.</p>{% endfor %}
+      <a class="btn btn-full" href="{% url 'registration' %}?course={{ course.id }}">Register via Google Form</a>
+    </article>
+  {% empty %}
+    <p>No courses are published yet. Please contact VTalent for information.</p>
+  {% endfor %}
+  </div>
+</section>
+<section class="section soft-section"><div class="wrap service-grid"><div><p class="eyebrow">CAREER SUPPORT</p><h2>More than classroom training</h2></div><ul class="check-list"><li>Aptitude Training</li><li>GD / JAM Sessions</li><li>Resume Preparation & Presentation</li><li>Mock Interviews</li><li>Real-time project work guidance</li><li>Placement assistance</li></ul></div></section>
+{% endblock %}

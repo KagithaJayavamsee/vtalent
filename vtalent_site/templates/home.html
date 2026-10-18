@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}VTalent | Value For Your IT Dream{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="hero-inner wrap">
+    <div class="hero-copy">
+      <p class="eyebrow light">TECHNICAL TRAINING · SKILL DEVELOPMENT · PLACEMENTS</p>
+      <h1>Value For Your <span>IT Dream</span></h1>
+      <p class="hero-description">Vtalent is a leading Technical Training, Skill Development and Placement company based in Hyderabad serving PAN India. Our courses are designed by IT veterans to help students build practical skills and understand real-world industry requirements.</p>
+      <div class="hero-actions"><a class="btn" href="{% url 'courses' %}">Explore Courses <span>→</span></a><a class="btn btn-outline-light" href="{% url 'registration' %}">Register Now</a></div>
+      <div class="hero-points"><span>✓ Practical training with real exposure</span><span>✓ Trainers from leading MNCs</span></div>
+    </div>
+    <aside class="batch-panel">
+      <div class="panel-heading"><h2>Batch Registrations</h2><span class="count-pill">{{ open_batch_count }} open</span></div>
+      {% for batch in open_batches %}
+      <div class="batch-row"><div><strong>{{ batch.course.title }}</strong><small>{{ batch.name }} · {{ batch.duration|default:batch.course.duration }}</small></div><a class="btn btn-mini" href="{% url 'register_batch' batch.id %}">Register</a></div>
+      {% empty %}
+      <p class="muted">New batches will be announced soon. Please check back.</p>
+      {% endfor %}
+      <a class="panel-link" href="{% url 'registration' %}">View all batches →</a>
+    </aside>
+  </div>
+</section>
+<section class="section wrap">
+  <div class="section-heading"><p class="eyebrow">LEARN · BUILD · GROW</p><h2>Our Courses</h2><p>Our courses and services offer an immense learning experience.</p></div>
+  <div class="course-grid">
+    {% for course in courses %}
+    <article class="course-card">
+      <p class="eyebrow">{{ course.category|default:"CAREER-FOCUSED TRAINING" }}</p><h3>{{ course.title }}</h3><p>{{ course.description|default:"Practical training, project guidance and career-focused learning." }}</p>
+      <div class="tag-row"><span class="tag">{{ course.duration }}</span>{% if course.batches.all %}<span class="tag tag-green">Batch updates available</span>{% endif %}</div>
+      <a class="text-link" href="{% url 'courses' %}">Explore course →</a>
+    </article>
+    {% empty %}
+    <article class="course-card"><h3>Courses are being updated</h3><p>Please contact our team for current batch details.</p></article>
+    {% endfor %}
+  </div>
+  <div class="center-action"><a class="btn" href="{% url 'courses' %}">View All Courses</a></div>
+</section>
+<section class="stats-band"><div class="wrap stats-grid"><div><strong>3000+</strong><span>Students</span></div><div><strong>100%</strong><span>Placement assistance and career support*</span></div><div><strong>Industry</strong><span>Relevant practical training</span></div></div></section>
+<section class="section wrap promise"><p class="eyebrow">WHY VTALENT</p><h2>We train our students according to company requirements.</h2><p>Learn through practical sessions, real-time project guidance, aptitude training, mock interviews and resume preparation.</p><a class="btn" href="{% url 'about' %}">About VTalent</a></section>
+{% endblock %}
