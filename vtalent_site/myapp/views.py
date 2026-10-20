@@ -253,6 +253,7 @@ def course_edit(request, pk):
 
 @login_required(login_url='staff_login')
 @user_passes_test(lambda user: user.is_staff, login_url='staff_login')
+@require_POST
 def course_delete(request, pk):
     course = get_object_or_404(Course, pk=pk)
     course.delete()

@@ -77,6 +77,20 @@ class AdminCourseCreationTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, self.url)
 
+    def test_course_is_deleted_only_after_explicit_post(self):
+        course = Course.objects.create(title='Salesforce Development')
+        delete_url = reverse('course_delete', args=[course.pk])
+
+        response = self.client.get(delete_url)
+
+        self.assertEqual(response.status_code, 405)
+        self.assertTrue(Course.objects.filter(pk=course.pk).exists())
+
+        response = self.client.post(delete_url)
+
+        self.assertRedirects(response, reverse('admin_dashboard'))
+        self.assertFalse(Course.objects.filter(pk=course.pk).exists())
+
     def test_valid_submission_creates_course_and_closed_batch(self):
         response = self.client.post(self.url, {
             'title': 'Salesforce Development',
