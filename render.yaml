@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: vtalent
+    runtime: python
+    buildCommand: pip install -r requirements.txt && python vtalent_site/manage.py collectstatic --noinput
+    startCommand: python vtalent_site/manage.py migrate --noinput && gunicorn --chdir vtalent_site vtalent_site.wsgi:application
+    healthCheckPath: /
+    envVars:
+      - key: DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        generateValue: true

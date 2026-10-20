@@ -16,6 +16,43 @@ class AdminUrlTests(SimpleTestCase):
         self.assertEqual(resolve('/admin/course/add/').view_name, 'admin_course_add')
 
 
+class StaffLoginTests(TestCase):
+    def test_staff_user_can_sign_in_with_changed_password(self):
+        staff_user = get_user_model().objects.create_user(
+            username='admin',
+            password='New-safe-password-9!',
+            is_staff=True,
+            is_superuser=True,
+        )
+
+        response = self.client.post(reverse('staff_login'), {
+            'username': 'admin',
+            'password': 'New-safe-password-9!',
+        })
+
+        self.assertRedirects(response, reverse('admin_dashboard'))
+        self.assertEqual(int(self.client.session['_auth_user_id']), staff_user.pk)
+
+    def test_old_default_password_does_not_reset_changed_admin_password(self):
+        staff_user = get_user_model().objects.create_user(
+            username='admin',
+            password='New-safe-password-9!',
+            is_staff=True,
+            is_superuser=True,
+        )
+
+        response = self.client.post(reverse('staff_login'), {
+            'username': 'admin',
+            'password': 'admin123',
+        })
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Invalid username or password.')
+        staff_user.refresh_from_db()
+        self.assertTrue(staff_user.check_password('New-safe-password-9!'))
+        self.assertNotIn('_auth_user_id', self.client.session)
+
+
 class AdminCourseCreationTests(TestCase):
     def setUp(self):
         self.staff_user = get_user_model().objects.create_user(

@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 
 
@@ -72,3 +73,28 @@ class Announcement(models.Model):
 
     def __str__(self):
         return self.message
+
+
+class AdminPasswordResetOTP(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='admin_password_reset_otp',
+    )
+    code_hash = models.CharField(max_length=128)
+    created_at = models.DateTimeField()
+    expires_at = models.DateTimeField()
+    attempts = models.PositiveSmallIntegerField(default=0)
+
+
+class AdminPasswordResetRequest(models.Model):
+    email_digest = models.CharField(max_length=64)
+    ip_digest = models.CharField(max_length=64)
+    created_at = models.DateTimeField()
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['email_digest', 'created_at']),
+            models.Index(fields=['ip_digest', 'created_at']),
+            models.Index(fields=['created_at']),
+        ]

