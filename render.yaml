@@ -2,11 +2,29 @@ services:
   - type: web
     name: vtalent
     runtime: python
+    plan: starter
     buildCommand: pip install -r requirements.txt && python vtalent_site/manage.py collectstatic --noinput
-    startCommand: python vtalent_site/manage.py migrate --noinput && gunicorn --chdir vtalent_site vtalent_site.wsgi:application
+    startCommand: python vtalent_site/manage.py migrate --noinput && python vtalent_site/manage.py copy_legacy_data && gunicorn --chdir vtalent_site vtalent_site.wsgi:application --bind 0.0.0.0:$PORT
     healthCheckPath: /
+    disk:
+      name: vtalent-data
+      mountPath: /var/data
+      sizeGB: 1
     envVars:
       - key: DEBUG
         value: "False"
       - key: SECRET_KEY
         generateValue: true
+      - key: DATABASE_PATH
+        value: /var/data/db.sqlite3
+      # Temporary source for the one-time copy into persistent SQLite.
+      - key: DATABASE_URL
+        fromDatabase:
+          name: vtalent-db
+          property: connectionString
+
+databases:
+  - name: vtalent-db
+    databaseName: vtalent
+    user: vtalent
+    plan: free
