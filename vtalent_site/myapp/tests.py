@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.test import SimpleTestCase, TestCase
 from django.urls import resolve, reverse
 
-from .models import Batch, Course
+from .models import Announcement, Batch, Course
 
 
 class AdminUrlTests(SimpleTestCase):
@@ -90,6 +90,48 @@ class AdminCourseCreationTests(TestCase):
 
         self.assertRedirects(response, reverse('admin_dashboard'))
         self.assertFalse(Course.objects.filter(pk=course.pk).exists())
+
+    def test_batch_is_deleted_only_after_explicit_post(self):
+        course = Course.objects.create(title='Salesforce Development')
+        batch = Batch.objects.create(course=course, name='August Batch')
+        delete_url = reverse('batch_delete', args=[batch.pk])
+
+        response = self.client.get(delete_url)
+
+        self.assertEqual(response.status_code, 405)
+        self.assertTrue(Batch.objects.filter(pk=batch.pk).exists())
+
+        response = self.client.post(delete_url)
+
+        self.assertRedirects(response, reverse('admin_dashboard'))
+        self.assertFalse(Batch.objects.filter(pk=batch.pk).exists())
+
+    def test_announcement_can_be_edited_without_changing_its_active_state(self):
+        notice = Announcement.objects.create(message='Old note', is_active=False)
+
+        response = self.client.post(
+            reverse('announcement_edit', args=[notice.pk]),
+            {'message': 'Updated note'},
+        )
+
+        self.assertRedirects(response, reverse('admin_dashboard'))
+        notice.refresh_from_db()
+        self.assertEqual(notice.message, 'Updated note')
+        self.assertFalse(notice.is_active)
+
+    def test_announcement_is_deleted_only_after_explicit_post(self):
+        notice = Announcement.objects.create(message='Keep this note')
+        delete_url = reverse('announcement_delete', args=[notice.pk])
+
+        response = self.client.get(delete_url)
+
+        self.assertEqual(response.status_code, 405)
+        self.assertTrue(Announcement.objects.filter(pk=notice.pk).exists())
+
+        response = self.client.post(delete_url)
+
+        self.assertRedirects(response, reverse('admin_dashboard'))
+        self.assertFalse(Announcement.objects.filter(pk=notice.pk).exists())
 
     def test_valid_submission_creates_course_and_closed_batch(self):
         response = self.client.post(self.url, {

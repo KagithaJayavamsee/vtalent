@@ -90,22 +90,22 @@ WSGI_APPLICATION = 'vtalent_site.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-database_url = os.environ.get('DATABASE_URL')
-if database_url:
-    DATABASES = {
-        'default': dj_database_url.parse(
-            database_url,
-            conn_max_age=600,
-            ssl_require=not DEBUG,
-        )
+DATABASE_PATH = Path(os.environ.get('DATABASE_PATH', BASE_DIR / 'db.sqlite3'))
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': DATABASE_PATH,
     }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
+}
+
+# Keep the previous Render database available only for the one-time data copy.
+legacy_database_url = os.environ.get('DATABASE_URL')
+if legacy_database_url:
+    DATABASES['legacy'] = dj_database_url.parse(
+        legacy_database_url,
+        conn_max_age=600,
+        ssl_require=not DEBUG,
+    )
 
 
 # Password validation

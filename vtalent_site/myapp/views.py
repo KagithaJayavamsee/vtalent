@@ -313,6 +313,7 @@ def batch_registration_toggle(request, pk):
 
 @login_required(login_url='staff_login')
 @user_passes_test(lambda user: user.is_staff, login_url='staff_login')
+@require_POST
 def batch_delete(request, pk):
     batch = get_object_or_404(Batch, pk=pk)
     batch.delete()
@@ -322,6 +323,7 @@ def batch_delete(request, pk):
 
 @login_required(login_url='staff_login')
 @user_passes_test(lambda user: user.is_staff, login_url='staff_login')
+@require_POST
 def announcement_add(request):
     if request.method == 'POST':
         form = AnnouncementForm(request.POST)
@@ -333,6 +335,27 @@ def announcement_add(request):
 
 @login_required(login_url='staff_login')
 @user_passes_test(lambda user: user.is_staff, login_url='staff_login')
+@require_POST
+def announcement_edit(request, pk):
+    notice = get_object_or_404(Announcement, pk=pk)
+    form = AnnouncementForm(
+        {
+            'message': request.POST.get('message', ''),
+            'is_active': notice.is_active,
+        },
+        instance=notice,
+    )
+    if form.is_valid():
+        form.save()
+        messages.success(request, 'Announcement updated.')
+    else:
+        messages.error(request, 'Enter a valid announcement.')
+    return redirect('admin_dashboard')
+
+
+@login_required(login_url='staff_login')
+@user_passes_test(lambda user: user.is_staff, login_url='staff_login')
+@require_POST
 def announcement_toggle(request, pk):
     notice = get_object_or_404(Announcement, pk=pk)
     notice.is_active = not notice.is_active
@@ -343,6 +366,7 @@ def announcement_toggle(request, pk):
 
 @login_required(login_url='staff_login')
 @user_passes_test(lambda user: user.is_staff, login_url='staff_login')
+@require_POST
 def announcement_delete(request, pk):
     notice = get_object_or_404(Announcement, pk=pk)
     notice.delete()
