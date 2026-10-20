@@ -279,10 +279,19 @@ def batch_add(request):
 def batch_edit(request, pk):
     batch = get_object_or_404(Batch, pk=pk)
     if request.method == 'POST':
+        saved_google_form_url = batch.google_form_url
         form = BatchForm(request.POST, instance=batch)
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Batch updated successfully.')
+            updated_batch = form.save(commit=False)
+            if saved_google_form_url and not form.cleaned_data['google_form_url']:
+                updated_batch.google_form_url = saved_google_form_url
+                messages.success(
+                    request,
+                    'Batch updated. The existing registration link was kept; replace it or delete the batch to remove it.',
+                )
+            else:
+                messages.success(request, 'Batch updated successfully.')
+            updated_batch.save()
     return redirect('admin_dashboard')
 
 
