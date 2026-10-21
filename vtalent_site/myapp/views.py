@@ -14,7 +14,7 @@ from .models import Announcement, Batch, Course
 class CourseForm(forms.ModelForm):
     class Meta:
         model = Course
-        fields = ['title', 'category', 'description', 'duration', 'syllabus', 'display_order', 'is_published']
+        fields = ['title', 'category', 'description', 'duration', 'syllabus', 'display_order']
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control'}),
             'category': forms.TextInput(attrs={'class': 'form-control'}),
@@ -90,7 +90,7 @@ class CourseCreationForm(forms.Form):
 class BatchForm(forms.ModelForm):
     class Meta:
         model = Batch
-        fields = ['course', 'name', 'month', 'year', 'duration', 'google_form_url', 'is_visible']
+        fields = ['course', 'name', 'month', 'year', 'duration', 'google_form_url']
         widgets = {
             'course': forms.Select(attrs={'class': 'form-control'}),
             'name': forms.TextInput(attrs={'class': 'form-control'}),
@@ -104,39 +104,37 @@ class BatchForm(forms.ModelForm):
 class AnnouncementForm(forms.ModelForm):
     class Meta:
         model = Announcement
-        fields = ['message', 'is_active']
+        fields = ['message']
         widgets = {
             'message': forms.TextInput(attrs={'class': 'form-control'}),
         }
 
 
 def get_public_courses():
-    return Course.objects.filter(is_published=True).order_by('display_order', 'title')
+    return Course.objects.order_by('display_order', 'title')
 
 
-def get_active_announcements():
-    return Announcement.objects.filter(is_active=True).order_by('-created_at')
+def get_announcements():
+    return Announcement.objects.order_by('-created_at')
 
 
 def home(request):
     courses = get_public_courses().prefetch_related('batches')
-    open_batches = Batch.objects.filter(
-        registrations_open=True,
-        is_visible=True,
-        google_form_url__gt='',
-    ).select_related('course').order_by('course__display_order', 'year', 'month')
+    batches = Batch.objects.select_related('course').order_by(
+        'course__display_order', 'year', 'month', 'name',
+    )
     context = {
         'courses': courses,
-        'open_batches': open_batches,
-        'open_batch_count': open_batches.count(),
-        'announcements': get_active_announcements(),
+        'batches': batches,
+        'batch_count': batches.count(),
+        'announcements': get_announcements(),
     }
     return render(request, 'home.html', context)
 
 
 def courses(request):
     courses = get_public_courses().prefetch_related('batches')
-    return render(request, 'courses.html', {'courses': courses, 'announcements': get_active_announcements()})
+    return render(request, 'courses.html', {'courses': courses, 'announcements': get_announcements()})
 
 
 def registration(request):
@@ -145,16 +143,16 @@ def registration(request):
     return render(request, 'registration.html', {
         'courses': courses,
         'selected_course_id': selected_course_id,
-        'announcements': get_active_announcements(),
+        'announcements': get_announcements(),
     })
 
 
 def about(request):
-    return render(request, 'about.html', {'announcements': get_active_announcements()})
+    return render(request, 'about.html', {'announcements': get_announcements()})
 
 
 def contact(request):
-    return render(request, 'contact.html', {'announcements': get_active_announcements()})
+    return render(request, 'contact.html', {'announcements': get_announcements()})
 
 
 def staff_login(request):
@@ -173,7 +171,7 @@ def staff_login(request):
 
         error = 'Invalid username or password.'
 
-    return render(request, 'admin_login.html', {'error': error, 'announcements': get_active_announcements()})
+    return render(request, 'admin_login.html', {'error': error, 'announcements': get_announcements()})
 
 
 @login_required(login_url='staff_login')
@@ -186,7 +184,7 @@ def admin_dashboard(request):
         'all_announcements': all_announcements,
         'batch_form': BatchForm(),
         'announcement_form': AnnouncementForm(),
-        'announcements': get_active_announcements(),
+        'announcements': get_announcements(),
     })
 
 
@@ -215,8 +213,8 @@ def admin_course_add(request):
                     google_form_url=form.cleaned_data['google_form_link'],
                     registrations_open=False,
                 )
-            messages.success(request, f'{course.title} was added successfully. Registrations are closed.')
-            return redirect('admin_course_add')
+            messages.success(request, f'{course.title} was added successfully.')
+            return redirect('admin_dashboard')
 
         for field_name, field in form.fields.items():
             if form.errors.get(field_name):
@@ -236,6 +234,8 @@ def course_add(request):
         if form.is_valid():
             form.save()
             messages.success(request, 'Course added successfully.')
+        else:
+            messages.error(request, 'Course was not saved. Check the submitted fields and try again.')
     return redirect('admin_dashboard')
 
 
@@ -248,11 +248,14 @@ def course_edit(request, pk):
         if form.is_valid():
             form.save()
             messages.success(request, 'Course updated successfully.')
+        else:
+            messages.error(request, 'Course was not updated. Check the submitted fields and try again.')
     return redirect('admin_dashboard')
 
 
 @login_required(login_url='staff_login')
 @user_passes_test(lambda user: user.is_staff, login_url='staff_login')
+@require_POST
 def course_delete(request, pk):
     course = get_object_or_404(Course, pk=pk)
     course.delete()
@@ -269,7 +272,9 @@ def batch_add(request):
             batch = form.save(commit=False)
             batch.registrations_open = False
             batch.save()
-            messages.success(request, 'Batch added successfully. Open registrations when its form link is ready.')
+            messages.success(request, 'Batch added successfully and is now listed on the website.')
+        else:
+            messages.error(request, 'Batch was not saved. Check the submitted fields and try again.')
     return redirect('admin_dashboard')
 
 
@@ -278,10 +283,21 @@ def batch_add(request):
 def batch_edit(request, pk):
     batch = get_object_or_404(Batch, pk=pk)
     if request.method == 'POST':
+        saved_google_form_url = batch.google_form_url
         form = BatchForm(request.POST, instance=batch)
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Batch updated successfully.')
+            updated_batch = form.save(commit=False)
+            if saved_google_form_url and not form.cleaned_data['google_form_url']:
+                updated_batch.google_form_url = saved_google_form_url
+                messages.success(
+                    request,
+                    'Batch updated. The existing registration link was kept; replace it or delete the batch to remove it.',
+                )
+            else:
+                messages.success(request, 'Batch updated successfully.')
+            updated_batch.save()
+        else:
+            messages.error(request, 'Batch was not updated. Check the submitted fields and try again.')
     return redirect('admin_dashboard')
 
 
@@ -312,6 +328,7 @@ def batch_registration_toggle(request, pk):
 
 @login_required(login_url='staff_login')
 @user_passes_test(lambda user: user.is_staff, login_url='staff_login')
+@require_POST
 def batch_delete(request, pk):
     batch = get_object_or_404(Batch, pk=pk)
     batch.delete()
@@ -321,27 +338,40 @@ def batch_delete(request, pk):
 
 @login_required(login_url='staff_login')
 @user_passes_test(lambda user: user.is_staff, login_url='staff_login')
+@require_POST
 def announcement_add(request):
     if request.method == 'POST':
         form = AnnouncementForm(request.POST)
         if form.is_valid():
             form.save()
             messages.success(request, 'Announcement published.')
+        else:
+            messages.error(request, 'Announcement was not published. Check the submitted fields and try again.')
     return redirect('admin_dashboard')
 
 
 @login_required(login_url='staff_login')
 @user_passes_test(lambda user: user.is_staff, login_url='staff_login')
-def announcement_toggle(request, pk):
+@require_POST
+def announcement_edit(request, pk):
     notice = get_object_or_404(Announcement, pk=pk)
-    notice.is_active = not notice.is_active
-    notice.save()
-    messages.success(request, 'Announcement updated.')
+    form = AnnouncementForm(
+        {
+            'message': request.POST.get('message', ''),
+        },
+        instance=notice,
+    )
+    if form.is_valid():
+        form.save()
+        messages.success(request, 'Announcement updated.')
+    else:
+        messages.error(request, 'Enter a valid announcement.')
     return redirect('admin_dashboard')
 
 
 @login_required(login_url='staff_login')
 @user_passes_test(lambda user: user.is_staff, login_url='staff_login')
+@require_POST
 def announcement_delete(request, pk):
     notice = get_object_or_404(Announcement, pk=pk)
     notice.delete()
@@ -356,6 +386,6 @@ def staff_logout(request):
 
 def register_batch(request, batch_id):
     batch = get_object_or_404(Batch, pk=batch_id)
-    if batch.google_form_url:
+    if batch.can_register:
         return redirect(batch.google_form_url)
     return redirect('registration')

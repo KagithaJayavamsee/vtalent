@@ -1,0 +1,12 @@
+{
+  "private": true,
+  "scripts": {
+    "build": "esbuild vtalent_site/static/js/realtime.js --bundle --format=esm --target=es2022 --outfile=vtalent_site/static/js/realtime.bundle.js"
+  },
+  "dependencies": {
+    "@neon/realtime": "0.1.2"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  }
+}

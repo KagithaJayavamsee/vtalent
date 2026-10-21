@@ -11,9 +11,9 @@
       <div class="hero-points"><span>✓ Practical training with real exposure</span><span>✓ Trainers from leading MNCs</span></div>
     </div>
     <aside class="batch-panel">
-      <div class="panel-heading"><h2>Batch Registrations</h2><span class="count-pill">{{ open_batch_count }} open</span></div>
-      {% for batch in open_batches %}
-      <div class="batch-row"><div><strong>{{ batch.course.title }}</strong><small>{{ batch.name }} · {{ batch.duration|default:batch.course.duration }}</small></div><a class="btn btn-mini" href="{% url 'register_batch' batch.id %}">Register</a></div>
+      <div class="panel-heading"><h2>Available Batches</h2><span class="count-pill">{{ batch_count }} total</span></div>
+      {% for batch in batches %}
+      <div class="batch-row"><div><strong>{{ batch.course.title }}</strong><small>{{ batch.name }} · {{ batch.duration|default:batch.course.duration }}</small></div>{% if batch.google_form_url %}<a class="btn btn-mini" href="{{ batch.google_form_url }}" target="_blank" rel="noopener noreferrer">Google Form</a>{% else %}<span class="status-closed">Form coming soon</span>{% endif %}</div>
       {% empty %}
       <p class="muted">New batches will be announced soon. Please check back.</p>
       {% endfor %}

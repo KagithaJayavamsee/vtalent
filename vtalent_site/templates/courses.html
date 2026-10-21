@@ -13,7 +13,7 @@
       {% if course.syllabus_items|length > 5 %}<details class="syllabus-more"><summary>View full syllabus</summary><p>Full syllabus is listed above.</p></details>{% endif %}
       <h4>Available batches</h4>
       {% for batch in course.batches.all %}
-        {% if batch.is_visible %}<div class="available-batch"><div><strong>{{ batch.name }}</strong><small>{{ batch.month_year }} · {{ batch.duration|default:course.duration }}</small></div>{% if batch.can_register %}<span class="status-open">Registrations Open</span><a class="btn btn-mini" href="{% url 'register_batch' batch.id %}">Register</a>{% else %}<span class="status-closed">Registrations Closed</span><button class="btn btn-mini" disabled>Closed</button>{% endif %}</div>{% endif %}
+        <div class="available-batch"><div><strong>{{ batch.name }}</strong><small>{{ batch.month_year }} · {{ batch.duration|default:course.duration }}</small></div>{% if batch.can_register %}<span class="status-open">Registrations Open</span>{% else %}<span class="status-closed">Registrations Closed</span>{% endif %}{% if batch.google_form_url %}<a class="btn btn-mini" href="{{ batch.google_form_url }}" target="_blank" rel="noopener noreferrer">Google Form</a>{% else %}<span class="muted">Form coming soon</span>{% endif %}</div>
       {% empty %}<p class="muted">Batch details will be announced soon.</p>{% endfor %}
       <a class="btn btn-full" href="{% url 'registration' %}?course={{ course.id }}">Register via Google Form</a>
     </article>

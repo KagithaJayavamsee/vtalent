@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="{% static 'css/style.css' %}">
   <link rel="stylesheet" href="{% static 'css/brand.css' %}">
 </head>
-<body>
+<body data-neon-realtime-url="{{ neon_realtime_url }}" data-realtime-api-url="{{ realtime_api_url }}">
 <header class="site-header">
   <a class="brand" href="{% url 'home' %}" aria-label="VTalent home">
     <img class="brand-logo" src="{% static 'image/vtalent logo.jpg' %}" alt="">
@@ -46,6 +46,7 @@
   <div class="footer-bottom">© Vtalent, All Rights Reserved.</div>
 </footer>
 <script src="{% static 'js/site.js' %}"></script>
+{% if neon_realtime_url and realtime_api_url %}<script type="module" src="{% static 'js/realtime.bundle.js' %}"></script>{% endif %}
 {% block scripts %}{% endblock %}
 </body>
 </html>
