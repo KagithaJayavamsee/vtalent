@@ -13,6 +13,9 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 import os
 
+import dj_database_url
+from django.core.exceptions import ImproperlyConfigured
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -77,6 +80,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'myapp.context_processors.neon_realtime',
             ],
         },
     },
@@ -88,12 +92,28 @@ WSGI_APPLICATION = 'vtalent_site.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+database_url = os.environ.get('DATABASE_URL')
+if database_url:
+    DATABASES = {
+        'default': dj_database_url.parse(
+            database_url,
+            conn_max_age=600,
+            ssl_require=True,
+        )
     }
-}
+elif DEBUG:
+    DATABASE_PATH = Path(os.environ.get('DATABASE_PATH', BASE_DIR / 'db.sqlite3'))
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': DATABASE_PATH,
+        }
+    }
+else:
+    raise ImproperlyConfigured('DATABASE_URL must be configured when DEBUG is False.')
+
+NEON_REALTIME_URL = os.environ.get('NEON_REALTIME_URL', '')
+REALTIME_API_URL = os.environ.get('REALTIME_API_URL', '')
 
 
 # Password validation

@@ -2,11 +2,44 @@ services:
   - type: web
     name: vtalent
     runtime: python
-    buildCommand: pip install -r requirements.txt && python vtalent_site/manage.py collectstatic --noinput
-    startCommand: python vtalent_site/manage.py migrate --noinput && gunicorn --chdir vtalent_site vtalent_site.wsgi:application
+    plan: starter
+    buildCommand: npm install && npm run build && pip install -r requirements.txt && python vtalent_site/manage.py collectstatic --noinput
+    preDeployCommand: python vtalent_site/manage.py migrate --noinput
+    startCommand: gunicorn --chdir vtalent_site vtalent_site.wsgi:application --bind 0.0.0.0:$PORT
     healthCheckPath: /
+    disk:
+      name: vtalent-data
+      mountPath: /var/data
+      sizeGB: 1
     envVars:
       - key: DEBUG
         value: "False"
       - key: SECRET_KEY
         generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: NEON_REALTIME_URL
+        sync: false
+      - key: REALTIME_API_URL
+        sync: false
+
+  - type: web
+    name: vtalent-realtime
+    runtime: node
+    plan: starter
+    buildCommand: npm --prefix realtime-service install
+    startCommand: npm --prefix realtime-service start
+    healthCheckPath: /healthz
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: NEON_REALTIME_SECRET
+        sync: false
+      - key: APP_ORIGIN
+        sync: false
+
+databases:
+  - name: vtalent-db
+    databaseName: vtalent
+    user: vtalent
+    plan: free

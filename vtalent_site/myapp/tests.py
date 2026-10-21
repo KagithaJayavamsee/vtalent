@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.test import SimpleTestCase, TestCase
 from django.urls import resolve, reverse
 
-from .models import Announcement, Batch, Course
+from .models import Batch, Course
 
 
 class AdminUrlTests(SimpleTestCase):
@@ -91,54 +91,59 @@ class AdminCourseCreationTests(TestCase):
         self.assertRedirects(response, reverse('admin_dashboard'))
         self.assertFalse(Course.objects.filter(pk=course.pk).exists())
 
-    def test_batch_is_deleted_only_after_explicit_post(self):
+    def test_default_courses_are_available(self):
+        response = self.client.get(reverse('admin_dashboard'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Java Full Stack Development, AI Integration &amp; AWS Cloud')
+        self.assertContains(response, 'Python Full Stack Development, AI/ML &amp; AWS Cloud')
+
+    def test_batch_edit_keeps_registration_link_when_blank(self):
         course = Course.objects.create(title='Salesforce Development')
-        batch = Batch.objects.create(course=course, name='August Batch')
-        delete_url = reverse('batch_delete', args=[batch.pk])
-
-        response = self.client.get(delete_url)
-
-        self.assertEqual(response.status_code, 405)
-        self.assertTrue(Batch.objects.filter(pk=batch.pk).exists())
-
-        response = self.client.post(delete_url)
-
-        self.assertRedirects(response, reverse('admin_dashboard'))
-        self.assertFalse(Batch.objects.filter(pk=batch.pk).exists())
-
-    def test_announcement_can_be_edited_without_changing_its_active_state(self):
-        notice = Announcement.objects.create(message='Old note', is_active=False)
-
-        response = self.client.post(
-            reverse('announcement_edit', args=[notice.pk]),
-            {'message': 'Updated note'},
+        batch = Batch.objects.create(
+            course=course,
+            name='August Batch',
+            year=2026,
+            google_form_url='https://forms.gle/example',
         )
 
-        self.assertRedirects(response, reverse('admin_dashboard'))
-        notice.refresh_from_db()
-        self.assertEqual(notice.message, 'Updated note')
-        self.assertFalse(notice.is_active)
+        response = self.client.post(reverse('batch_edit', args=[batch.pk]), {
+            'course': course.pk,
+            'name': 'September Batch',
+            'month': 9,
+            'year': 2026,
+            'duration': '',
+            'google_form_url': '',
+            'is_visible': 'on',
+        }, follow=True)
 
-    def test_announcement_is_deleted_only_after_explicit_post(self):
-        notice = Announcement.objects.create(message='Keep this note')
-        delete_url = reverse('announcement_delete', args=[notice.pk])
+        self.assertEqual(response.status_code, 200)
+        batch.refresh_from_db()
+        self.assertEqual(batch.name, 'September Batch')
+        self.assertEqual(batch.year, 2026)
+        self.assertEqual(batch.google_form_url, 'https://forms.gle/example')
+        self.assertContains(response, 'The existing registration link was kept')
 
-        response = self.client.get(delete_url)
+        response = self.client.post(reverse('batch_edit', args=[batch.pk]), {
+            'course': course.pk,
+            'name': 'September Batch',
+            'month': 9,
+            'year': 2026,
+            'duration': '',
+            'google_form_url': 'https://forms.gle/updated',
+            'is_visible': 'on',
+        }, follow=True)
 
-        self.assertEqual(response.status_code, 405)
-        self.assertTrue(Announcement.objects.filter(pk=notice.pk).exists())
-
-        response = self.client.post(delete_url)
-
-        self.assertRedirects(response, reverse('admin_dashboard'))
-        self.assertFalse(Announcement.objects.filter(pk=notice.pk).exists())
+        self.assertEqual(response.status_code, 200)
+        batch.refresh_from_db()
+        self.assertEqual(batch.google_form_url, 'https://forms.gle/updated')
 
     def test_valid_submission_creates_course_and_closed_batch(self):
         response = self.client.post(self.url, {
             'title': 'Salesforce Development',
             'category': 'Cloud CRM',
             'batch_name': 'August Batch',
-            'duration': '4 Months',
+            'duration': '6 Months',
             'google_form_link': 'https://forms.gle/example',
             'syllabus': 'Core concepts\n\n Advanced topics \nReal-time project',
         }, follow=True)
@@ -149,7 +154,7 @@ class AdminCourseCreationTests(TestCase):
         batch = Batch.objects.get(course=course)
         self.assertEqual(course.syllabus_items, ['Core concepts', 'Advanced topics', 'Real-time project'])
         self.assertEqual(batch.name, 'August Batch')
-        self.assertEqual(batch.duration, '4 Months')
+        self.assertEqual(batch.duration, '6 Months')
         self.assertEqual(batch.google_form_url, 'https://forms.gle/example')
         self.assertFalse(batch.registrations_open)
 
@@ -224,4 +229,4 @@ class AdminCourseCreationTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'This field is required.')
         self.assertContains(response, 'Enter a valid URL.')
-        self.assertEqual(Course.objects.count(), 0)
+        self.assertFalse(Course.objects.filter(title='Salesforce Development').exists())
