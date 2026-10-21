@@ -93,14 +93,15 @@ WSGI_APPLICATION = 'vtalent_site.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASE_URL = os.environ.get('DATABASE_URL')
+DATABASE_URL = os.environ.get('DATABASE_URL', '').strip()
 
 if DATABASE_URL:
+    is_postgres_url = DATABASE_URL.startswith(('postgres://', 'postgresql://'))
     DATABASES = {
         'default': dj_database_url.parse(
             DATABASE_URL,
             conn_max_age=600,
-            ssl_require=True,
+            ssl_require=is_postgres_url,
         )
     }
 elif DEBUG:
@@ -112,7 +113,9 @@ elif DEBUG:
     }
 else:
     raise ImproperlyConfigured(
-        'DATABASE_URL must be set when DEBUG is disabled.'
+        'DATABASE_URL must be set when DEBUG is disabled. '
+        'Add the Neon/Postgres connection URL to the environment or copy the example ' 
+        'settings from .env.example.'
     )
 
 
