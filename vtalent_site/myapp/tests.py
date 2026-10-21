@@ -68,6 +68,7 @@ class AdminCourseCreationTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Add a New Course')
+        self.assertContains(response, '>Finish</button>')
         self.assertContains(response, 'Core concepts')
         self.assertContains(response, 'https://forms.gle/...')
 
