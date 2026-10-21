@@ -3,8 +3,9 @@ services:
     name: vtalent
     runtime: python
     plan: starter
-    buildCommand: pip install -r requirements.txt && python vtalent_site/manage.py collectstatic --noinput
-    startCommand: python vtalent_site/manage.py migrate --noinput && python vtalent_site/manage.py copy_legacy_data && gunicorn --chdir vtalent_site vtalent_site.wsgi:application --bind 0.0.0.0:$PORT
+    buildCommand: npm install && npm run build && pip install -r requirements.txt && python vtalent_site/manage.py collectstatic --noinput
+    preDeployCommand: python vtalent_site/manage.py migrate --noinput
+    startCommand: gunicorn --chdir vtalent_site vtalent_site.wsgi:application --bind 0.0.0.0:$PORT
     healthCheckPath: /
     disk:
       name: vtalent-data
@@ -15,13 +16,27 @@ services:
         value: "False"
       - key: SECRET_KEY
         generateValue: true
-      - key: DATABASE_PATH
-        value: /var/data/db.sqlite3
-      # Temporary source for the one-time copy into persistent SQLite.
       - key: DATABASE_URL
-        fromDatabase:
-          name: vtalent-db
-          property: connectionString
+        sync: false
+      - key: NEON_REALTIME_URL
+        sync: false
+      - key: REALTIME_API_URL
+        sync: false
+
+  - type: web
+    name: vtalent-realtime
+    runtime: node
+    plan: starter
+    buildCommand: npm --prefix realtime-service install
+    startCommand: npm --prefix realtime-service start
+    healthCheckPath: /healthz
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: NEON_REALTIME_SECRET
+        sync: false
+      - key: APP_ORIGIN
+        sync: false
 
 databases:
   - name: vtalent-db
