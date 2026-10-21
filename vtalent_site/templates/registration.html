@@ -9,18 +9,18 @@
     <select id="courseSelect" class="form-control">
       {% for course in courses %}<option value="{{ course.id }}" {% if selected_course_id == course.id|stringformat:"s" %}selected{% endif %}>{{ course.title }}</option>{% endfor %}
     </select>
-    <p class="help-text">Closed batches are shown as unavailable. You can register only for open batches with a valid form link.</p>
+    <p class="help-text">All saved courses and batches are listed here. Registration status and Google Form links are shown for each batch.</p>
     <div id="batchList">
       {% for course in courses %}
       <div class="registration-course" data-course="{{ course.id }}" {% if selected_course_id and selected_course_id != course.id|stringformat:"s" %}hidden{% elif not selected_course_id and not forloop.first %}hidden{% endif %}>
         {% for batch in course.batches.all %}
-          {% if batch.is_visible %}<div class="registration-batch"><span>{{ course.title }} · {{ batch.name }} · {{ batch.month_year }}</span>{% if batch.can_register %}<span class="status-open">Open</span><a href="{% url 'register_batch' batch.id %}" class="text-link">Register →</a>{% else %}<span class="status-closed">Closed</span>{% endif %}</div>{% endif %}
+          <div class="registration-batch"><span>{{ course.title }} · {{ batch.name }} · {{ batch.month_year }}</span>{% if batch.can_register %}<span class="status-open">Open</span>{% else %}<span class="status-closed">Closed</span>{% endif %}{% if batch.google_form_url %}<a href="{{ batch.google_form_url }}" class="text-link" target="_blank" rel="noopener noreferrer">Google Form →</a>{% endif %}</div>
         {% empty %}<p class="muted">No batches listed for this course yet.</p>{% endfor %}
       </div>
       {% endfor %}
     </div>
   </div>
-  <aside class="surface-card register-aside"><p class="eyebrow">STEP 2 — REGISTER</p><h2>Complete your registration</h2><p>Choose an open batch on the left. The registration button will open the Google Form provided by VTalent.</p><a id="registerFallback" class="btn btn-full" href="{% url 'courses' %}">View available batches ↗</a><p class="help-text">You'll be redirected to the selected Google Form. Fill in your details and our team will reach out.</p></aside>
+  <aside class="surface-card register-aside"><p class="eyebrow">STEP 2 — REGISTER</p><h2>Complete your registration</h2><p>Choose a batch on the left and use its Google Form link to register.</p><a id="registerFallback" class="btn btn-full" href="{% url 'courses' %}">View courses and batches ↗</a><p class="help-text">Fill in the form details and our team will reach out.</p></aside>
 </section>
 {% endblock %}
 {% block scripts %}<script>
