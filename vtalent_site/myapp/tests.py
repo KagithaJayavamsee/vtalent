@@ -76,6 +76,7 @@ class AdminCourseCreationTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, self.url)
+        self.assertContains(response, '+ Add New Course')
 
     def test_course_is_deleted_only_after_explicit_post(self):
         course = Course.objects.create(title='Salesforce Development')
@@ -150,6 +151,8 @@ class AdminCourseCreationTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Salesforce Development was added successfully')
+        self.assertEqual(response.redirect_chain[-1][0], reverse('admin_dashboard'))
+        self.assertContains(response, '+ Add New Course')
         course = Course.objects.get(title='Salesforce Development')
         batch = Batch.objects.get(course=course)
         self.assertEqual(course.syllabus_items, ['Core concepts', 'Advanced topics', 'Real-time project'])

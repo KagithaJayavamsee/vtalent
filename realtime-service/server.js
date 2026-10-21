@@ -25,19 +25,16 @@ const queries = [
   rawSql(
     `SELECT id, title, category, description, duration, syllabus, display_order, is_published, updated_at
      FROM myapp_course
-     WHERE is_published = TRUE
      ORDER BY display_order, title`,
   ),
   rawSql(
     `SELECT id, course_id, name, month, year, duration, google_form_url, registrations_open, is_visible, updated_at
      FROM myapp_batch
-     WHERE is_visible = TRUE
      ORDER BY year, month, name`,
   ),
   rawSql(
     `SELECT id, message, is_active, created_at
      FROM myapp_announcement
-     WHERE is_active = TRUE
      ORDER BY created_at DESC`,
   ),
 ];

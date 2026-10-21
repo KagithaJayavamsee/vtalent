@@ -22,6 +22,5 @@ urlpatterns = [
     path('register/<int:batch_id>/', views.register_batch, name='register_batch'),
     path('announcement/add/', views.announcement_add, name='announcement_add'),
     path('announcement/<int:pk>/edit/', views.announcement_edit, name='announcement_edit'),
-    path('announcement/<int:pk>/toggle/', views.announcement_toggle, name='announcement_toggle'),
     path('announcement/<int:pk>/delete/', views.announcement_delete, name='announcement_delete'),
 ]
